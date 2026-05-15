@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="crx10ia" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="prefix" default="fanuc"/>
+  <xacro:arg name="hand_type" default="minimal"/>
+
+  <xacro:include filename="$(find fanuc_moveit_config)/srdf/crx10ia_macro.srdf.xacro"/>
+
+  <xacro:crx10ia_srdf
+    prefix="$(arg prefix)"
+    hand_type="$(arg hand_type)"
+  />
+
+</robot>

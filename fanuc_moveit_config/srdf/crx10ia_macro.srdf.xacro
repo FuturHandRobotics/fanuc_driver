@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="crx10ia" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="crx10ia_srdf" params="prefix hand_type">
+
+    <group name="${prefix}_manipulator">
+      <chain base_link="${prefix}_base_link" tip_link="${prefix}_grasp"/>
+    </group>
+
+    <group_state name="default" group="${prefix}_manipulator">
+      <joint name="${prefix}_J1" value="0"/>
+      <joint name="${prefix}_J2" value="0"/>
+      <joint name="${prefix}_J3" value="0"/>
+      <joint name="${prefix}_J4" value="0"/>
+      <joint name="${prefix}_J5" value="-1.5708"/>
+      <joint name="${prefix}_J6" value="0"/>
+    </group_state>
+
+    <virtual_joint
+      name="world-${prefix}_base_link"
+      type="fixed"
+      parent_frame="world"
+      child_link="${prefix}_base_link"/>
+
+    <disable_collisions link1="${prefix}_J1_link" link2="${prefix}_J2_link" reason="Adjacent"/>
+    <disable_collisions link1="${prefix}_J1_link" link2="${prefix}_J3_link" reason="Never"/>
+    <disable_collisions link1="${prefix}_J1_link" link2="${prefix}_base_link" reason="Adjacent"/>
+    <disable_collisions link1="${prefix}_J2_link" link2="${prefix}_J3_link" reason="Adjacent"/>
+    <disable_collisions link1="${prefix}_J2_link" link2="${prefix}_J4_link" reason="Never"/>
+    <disable_collisions link1="${prefix}_J3_link" link2="${prefix}_J4_link" reason="Adjacent"/>
+    <disable_collisions link1="${prefix}_J3_link" link2="${prefix}_J5_link" reason="Never"/>
+    <disable_collisions link1="${prefix}_J3_link" link2="${prefix}_J6_link" reason="Never"/>
+    <disable_collisions link1="${prefix}_J3_link" link2="${prefix}_base_link" reason="Never"/>
+    <disable_collisions link1="${prefix}_J4_link" link2="${prefix}_J5_link" reason="Adjacent"/>
+    <disable_collisions link1="${prefix}_J4_link" link2="${prefix}_J6_link" reason="Never"/>
+    <disable_collisions link1="${prefix}_J5_link" link2="${prefix}_J6_link" reason="Adjacent"/>
+
+    <xacro:if value="${hand_type != 'none'}">
+      <disable_collisions link1="${prefix}_J6_link" link2="${prefix}_hand_link" reason="Adjacent"/>
+
+      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_ring_L1" reason="Adjacent"/>
+      <disable_collisions link1="${prefix}_ring_L1" link2="${prefix}_ring_L2" reason="Adjacent"/>
+      <disable_collisions link1="${prefix}_ring_L2" link2="${prefix}_ring_L3" reason="Adjacent"/>
+      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_index_L1" reason="Adjacent"/>
+      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_thumb_L1" reason="Adjacent"/>
+    </xacro:if>
+
+  </xacro:macro>
+
+</robot>

@@ -22,12 +22,12 @@ fanuc_gpio_controller:
 joint_trajectory_controller:
   ros__parameters:
     joints:
-      - J1
-      - J2
-      - J3
-      - J4
-      - J5
-      - J6
+      - fanuc_J1
+      - fanuc_J2
+      - fanuc_J3
+      - fanuc_J4
+      - fanuc_J5
+      - fanuc_J6
     command_interfaces:
       - position
     state_interfaces:
@@ -35,38 +35,39 @@ joint_trajectory_controller:
     state_publish_rate: 100.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
-    allow_nonzero_velocity_at_trajectory_end: false # Set to false to suppress deprecation warning
+    # allow_nonzero_velocity_at_trajectory_end: false # Set to false to suppress deprecation warning
+    allow_nonzero_velocity_at_trajectory_end: false # Set to true for moveit_servo
     constraints:
       stopped_velocity_tolerance: 0.0
       goal_time: 0.0
-      J1:
+      fanuc_J1:
         goal: 0.05
         trajectory: 0.25
-      J2:
+      fanuc_J2:
         goal: 0.05
         trajectory: 0.25
-      J3:
+      fanuc_J3:
         goal: 0.05
         trajectory: 0.25
-      J4:
+      fanuc_J4:
         goal: 0.05
         trajectory: 0.25
-      J5:
+      fanuc_J5:
         goal: 0.05
         trajectory: 0.25
-      J6:
+      fanuc_J6:
         goal: 0.05
         trajectory: 0.25
 
 forward_position_controller:
   ros__parameters:
     joints:
-      - J1
-      - J2
-      - J3
-      - J4
-      - J5
-      - J6
+      - fanuc_J1
+      - fanuc_J2
+      - fanuc_J3
+      - fanuc_J4
+      - fanuc_J5
+      - fanuc_J6
     interface_name: "position"
 
 force_torque_sensor_broadcaster:

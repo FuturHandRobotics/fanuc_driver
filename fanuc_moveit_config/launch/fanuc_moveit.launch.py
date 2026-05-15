@@ -26,6 +26,8 @@ def launch_setup(context, *args, **kwargs):
     ros2_control_config = LaunchConfiguration("ros2_control_config")
     gpio_configuration = LaunchConfiguration("gpio_configuration")
     use_mock = LaunchConfiguration("use_mock")
+    hand_type = LaunchConfiguration("hand_type")
+    prefix = LaunchConfiguration("prefix")
 
     nodes_to_launch = []
 
@@ -48,6 +50,8 @@ def launch_setup(context, *args, **kwargs):
             "ros2_control_config": ros2_control_config,
             "launch_rviz": "false",
             "use_mock": use_mock,
+            "hand_type": hand_type,
+            "prefix": prefix,
         }.items(),
         condition=UnlessCondition(use_mock),
     )
@@ -69,6 +73,8 @@ def launch_setup(context, *args, **kwargs):
             "gpio_configuration": gpio_configuration,
             "ros2_control_config": ros2_control_config,
             "launch_rviz": "false",
+            "hand_type": hand_type,
+            "prefix": prefix,
         }.items(),
         condition=IfCondition(use_mock),
     )
@@ -78,6 +84,8 @@ def launch_setup(context, *args, **kwargs):
         "robot_ip": robot_ip.perform(context),
         "use_mock": use_mock.perform(context),
         "gpio_configuration": gpio_configuration.perform(context),
+        "hand_type": hand_type.perform(context),
+        "prefix": prefix.perform(context),
     }
 
     urdf_full_path = os.path.join(
@@ -92,8 +100,13 @@ def launch_setup(context, *args, **kwargs):
         )
         .robot_description(file_path=urdf_full_path, mappings=description_arguments)
         .robot_description_semantic(
-            file_path=f"srdf/{robot_model.perform(context)}.srdf"
+            file_path=f"srdf/{robot_model.perform(context)}.srdf.xacro",
+            mappings={
+                "hand_type": hand_type.perform(context),
+                "prefix": prefix.perform(context),
+            },
         )
+        .joint_limits(file_path="config/joint_limits.yaml")
         .trajectory_execution(file_path="config/moveit_controllers.yaml")
         .planning_scene_monitor(
             publish_robot_description=True, publish_robot_description_semantic=True
@@ -178,6 +191,16 @@ def generate_launch_description():
             "use_mock",
             default_value="false",
             description="Whether to use a mock hardware interface.",
+        ),
+        DeclareLaunchArgument(
+            "hand_type",
+            default_value="minimal",
+            description="Hand/tool xacro variant to attach.",
+        ),
+        DeclareLaunchArgument(
+            "prefix",
+            default_value="fanuc",
+            description="Prefix for robot/hand frames and joints.",
         ),
     ]
 

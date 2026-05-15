@@ -27,6 +27,8 @@ def launch_setup(context, *args, **kwargs):
     robot_series = LaunchConfiguration("robot_series")
     ros2_control_config = LaunchConfiguration("ros2_control_config")
     launch_rviz = LaunchConfiguration("launch_rviz")
+    hand_type = LaunchConfiguration("hand_type")
+    prefix = LaunchConfiguration("prefix")
 
     robot_model_str = robot_model.perform(context)
     robot_series_str = robot_series.perform(context)
@@ -41,7 +43,8 @@ def launch_setup(context, *args, **kwargs):
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution(
-                [FindPackageShare("fanuc_hardware_interface"), "robot", urdf_xacro_file]
+                [FindPackageShare("fanuc_hardware_interface"),
+                 "robot", urdf_xacro_file]
             ),
             " ",
             "robot_ip:=1.1.1.1",
@@ -53,6 +56,12 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "robot_model:=",
             robot_model,
+            " ",
+            "hand_type:=",
+            hand_type,
+            " ",
+            "prefix:=",
+            prefix,
             " ",
         ]
     )
@@ -81,7 +90,8 @@ def launch_setup(context, *args, **kwargs):
     rviz_file = PathJoinSubstitution(
         [
             FindPackageShare(
-                PythonExpression(['"fanuc_" + "', robot_series, '" + "_description"'])
+                PythonExpression(
+                    ['"fanuc_" + "', robot_series, '" + "_description"'])
             ),
             "rviz",
             PythonExpression(['"view_" + "', robot_series, '" + ".rviz"']),
