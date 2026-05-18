@@ -28,6 +28,8 @@ def launch_setup(context, *args, **kwargs):
     use_mock = LaunchConfiguration("use_mock")
     hand_type = LaunchConfiguration("hand_type")
     prefix = LaunchConfiguration("prefix")
+    start_rviz = LaunchConfiguration("start_rviz")
+    rviz_file_path = LaunchConfiguration("rviz_file_path")
 
     nodes_to_launch = []
 
@@ -124,9 +126,7 @@ def launch_setup(context, *args, **kwargs):
     )
     nodes_to_launch.append(move_group_node)
 
-    rviz_file = PathJoinSubstitution(
-        [FindPackageShare("fanuc_moveit_config"), "rviz", "view_robot.rviz"]
-    )
+    rviz_file = rviz_file_path
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -140,6 +140,7 @@ def launch_setup(context, *args, **kwargs):
             moveit_config.joint_limits,
         ],
         arguments=["--display-config", rviz_file],
+        condition=IfCondition(start_rviz),
     )
     nodes_to_launch.append(rviz_node)
 
@@ -201,6 +202,19 @@ def generate_launch_description():
             "prefix",
             default_value="fanuc",
             description="Prefix for robot/hand frames and joints.",
+        ),
+        DeclareLaunchArgument(
+            "start_rviz",
+            default_value="true",
+            description="Whether to start RViz.",
+        ),
+        DeclareLaunchArgument(
+            "rviz_file_path",
+            default_value=PathJoinSubstitution(
+                [FindPackageShare("fanuc_moveit_config"),
+                 "rviz", "view_robot.rviz"]
+            ),
+            description="Path to the RViz config file.",
         ),
     ]
 
