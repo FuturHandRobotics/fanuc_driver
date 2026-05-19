@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <robot name="crx10ia" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="crx10ia_srdf" params="prefix hand_type">
+  <xacro:macro name="crx10ia_srdf" params="prefix hand_type hand_srdf_file">
 
     <group name="${prefix}_manipulator">
       <chain base_link="${prefix}_base_link" tip_link="${prefix}_grasp"/>
@@ -37,12 +37,8 @@
 
     <xacro:if value="${hand_type != 'none'}">
       <disable_collisions link1="${prefix}_J6_link" link2="${prefix}_hand_link" reason="Adjacent"/>
-
-      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_ring_L1" reason="Adjacent"/>
-      <disable_collisions link1="${prefix}_ring_L1" link2="${prefix}_ring_L2" reason="Adjacent"/>
-      <disable_collisions link1="${prefix}_ring_L2" link2="${prefix}_ring_L3" reason="Adjacent"/>
-      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_index_L1" reason="Adjacent"/>
-      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_thumb_L1" reason="Adjacent"/>
+      <xacro:include filename="$(arg hand_srdf_file)"/>
+      <xacro:hand_collisions_srdf prefix="${prefix}"/>
     </xacro:if>
 
   </xacro:macro>

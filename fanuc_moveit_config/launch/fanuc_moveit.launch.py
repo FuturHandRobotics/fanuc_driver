@@ -82,6 +82,11 @@ def launch_setup(context, *args, **kwargs):
     )
     nodes_to_launch.append(include_fanuc_mock_control)
 
+    hand_srdf_file = os.path.join(
+        get_package_share_directory("futur_hand_description"),
+        "hands", f"hand_{hand_type.perform(context)}", "srdf", "hand_collisions.srdf.xacro",
+    )
+
     description_arguments = {
         "robot_ip": robot_ip.perform(context),
         "use_mock": use_mock.perform(context),
@@ -106,6 +111,7 @@ def launch_setup(context, *args, **kwargs):
             mappings={
                 "hand_type": hand_type.perform(context),
                 "prefix": prefix.perform(context),
+                "hand_srdf_file": hand_srdf_file,
             },
         )
         .joint_limits(file_path="config/joint_limits.yaml")
