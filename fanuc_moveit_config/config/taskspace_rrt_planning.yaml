@@ -1,0 +1,20 @@
+planning_plugins:
+  - futur_arm_planners/TaskspaceRRTManager
+
+request_adapters:
+  - default_planning_request_adapters/ResolveConstraintFrames
+  - default_planning_request_adapters/ValidateWorkspaceBounds
+  - default_planning_request_adapters/CheckStartStateBounds
+  - default_planning_request_adapters/CheckStartStateCollision
+
+response_adapters:
+  - default_planning_response_adapters/ValidateSolution
+  - default_planning_response_adapters/DisplayMotionPath
+
+taskspace_rrt:
+  # ee_link: ""              # leave unset to auto-derive from the group's tip link
+  planning_timeout: 10.0
+  goal_tolerance: 0.05       # SE(3) distance threshold to accept the goal
+  position_bound: 2.5        # workspace cube half-extent in metres
+  state_validity_resolution: 0.01  # fraction of state space per edge check step
+                                   # smaller = finer collision checking, slower planning

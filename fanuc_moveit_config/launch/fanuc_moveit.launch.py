@@ -30,6 +30,10 @@ def launch_setup(context, *args, **kwargs):
     prefix = LaunchConfiguration("prefix")
     start_rviz = LaunchConfiguration("start_rviz")
     rviz_file_path = LaunchConfiguration("rviz_file_path")
+    warehouse_plugin = LaunchConfiguration("warehouse_plugin").perform(context)
+    warehouse_host = LaunchConfiguration("warehouse_host").perform(context)
+    warehouse_port = int(LaunchConfiguration(
+        "warehouse_port").perform(context) or 0)
 
     nodes_to_launch = []
 
@@ -82,6 +86,11 @@ def launch_setup(context, *args, **kwargs):
     )
     nodes_to_launch.append(include_fanuc_mock_control)
 
+    hand_srdf_file = os.path.join(
+        get_package_share_directory("futur_hand_description"),
+        "hands", f"hand_{hand_type.perform(context)}", "srdf", "hand_collisions.srdf.xacro",
+    )
+
     description_arguments = {
         "robot_ip": robot_ip.perform(context),
         "use_mock": use_mock.perform(context),
@@ -106,6 +115,7 @@ def launch_setup(context, *args, **kwargs):
             mappings={
                 "hand_type": hand_type.perform(context),
                 "prefix": prefix.perform(context),
+                "hand_srdf_file": hand_srdf_file,
             },
         )
         .joint_limits(file_path="config/joint_limits.yaml")
@@ -113,7 +123,7 @@ def launch_setup(context, *args, **kwargs):
         .planning_scene_monitor(
             publish_robot_description=True, publish_robot_description_semantic=True
         )
-        .planning_pipelines(pipelines=["ompl"])
+        .planning_pipelines(pipelines=["ompl", "cartesian_rrtstar", "taskspace_rrt", "stomp"])
         .to_moveit_configs()
     )
 
@@ -128,7 +138,15 @@ def launch_setup(context, *args, **kwargs):
         output="log",
         parameters=[
             moveit_config.to_dict(),
+<<<<<<< HEAD
             move_group_capabilities,
+=======
+            {
+                "warehouse_plugin": warehouse_plugin,
+                "warehouse_host": warehouse_host,
+                "warehouse_port": warehouse_port,
+            },
+>>>>>>> d3bb320f5537f75742226aaadd2855bfde305101
         ],
     )
     nodes_to_launch.append(move_group_node)
@@ -144,6 +162,11 @@ def launch_setup(context, *args, **kwargs):
             moveit_config.robot_description_semantic,
             moveit_config.planning_pipelines,
             moveit_config.robot_description_kinematics,
+            {
+                "warehouse_plugin": warehouse_plugin,
+                "warehouse_host": warehouse_host,
+                "warehouse_port": warehouse_port,
+            },
             moveit_config.joint_limits,
         ],
         arguments=["--display-config", rviz_file],
@@ -222,6 +245,21 @@ def generate_launch_description():
                  "rviz", "view_robot.rviz"]
             ),
             description="Path to the RViz config file.",
+        ),
+        DeclareLaunchArgument(
+            "warehouse_plugin",
+            default_value="",
+            description="warehouse_ros plugin class (empty = no warehouse).",
+        ),
+        DeclareLaunchArgument(
+            "warehouse_host",
+            default_value="",
+            description="Warehouse database host or file path.",
+        ),
+        DeclareLaunchArgument(
+            "warehouse_port",
+            default_value="0",
+            description="Warehouse database port.",
         ),
     ]
 
