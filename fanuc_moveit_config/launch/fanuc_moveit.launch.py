@@ -117,12 +117,19 @@ def launch_setup(context, *args, **kwargs):
         .to_moveit_configs()
     )
 
+    move_group_capabilities = {
+        "capabilities": "move_group/ExecuteTaskSolutionCapability"
+    }
+
     # Start the actual move_group node/action server
     move_group_node = Node(
         package="moveit_ros_move_group",
         executable="move_group",
         output="log",
-        parameters=[moveit_config.to_dict()],
+        parameters=[
+            moveit_config.to_dict(),
+            move_group_capabilities,
+        ],
     )
     nodes_to_launch.append(move_group_node)
 
