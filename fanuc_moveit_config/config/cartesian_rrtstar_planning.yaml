@@ -1,0 +1,20 @@
+planning_plugins:
+  - futur_arm_planners/CartesianRRTstarManager
+
+request_adapters:
+  - default_planning_request_adapters/ResolveConstraintFrames
+  - default_planning_request_adapters/ValidateWorkspaceBounds
+  - default_planning_request_adapters/CheckStartStateBounds
+  - default_planning_request_adapters/CheckStartStateCollision
+
+# Time parameterization is handled inside the planner (TOTG), so it is
+# intentionally omitted from the response adapters here.
+response_adapters:
+  - default_planning_response_adapters/ValidateSolution
+  - default_planning_response_adapters/DisplayMotionPath
+
+cartesian_rrtstar:
+  # ee_link: ""  # leave unset to auto-derive from the group's tip link
+  planning_timeout: 10.0
+  goal_tolerance: 0.01
+  n_interp_steps: 16

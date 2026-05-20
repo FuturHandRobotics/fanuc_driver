@@ -30,6 +30,10 @@ def launch_setup(context, *args, **kwargs):
     prefix = LaunchConfiguration("prefix")
     start_rviz = LaunchConfiguration("start_rviz")
     rviz_file_path = LaunchConfiguration("rviz_file_path")
+    warehouse_plugin = LaunchConfiguration("warehouse_plugin").perform(context)
+    warehouse_host = LaunchConfiguration("warehouse_host").perform(context)
+    warehouse_port = int(LaunchConfiguration(
+        "warehouse_port").perform(context) or 0)
 
     nodes_to_launch = []
 
@@ -119,7 +123,7 @@ def launch_setup(context, *args, **kwargs):
         .planning_scene_monitor(
             publish_robot_description=True, publish_robot_description_semantic=True
         )
-        .planning_pipelines(pipelines=["ompl"])
+        .planning_pipelines(pipelines=["ompl", "cartesian_rrtstar", "taskspace_rrt", "stomp"])
         .to_moveit_configs()
     )
 
@@ -128,7 +132,14 @@ def launch_setup(context, *args, **kwargs):
         package="moveit_ros_move_group",
         executable="move_group",
         output="log",
-        parameters=[moveit_config.to_dict()],
+        parameters=[
+            moveit_config.to_dict(),
+            {
+                "warehouse_plugin": warehouse_plugin,
+                "warehouse_host": warehouse_host,
+                "warehouse_port": warehouse_port,
+            },
+        ],
     )
     nodes_to_launch.append(move_group_node)
 
@@ -143,6 +154,11 @@ def launch_setup(context, *args, **kwargs):
             moveit_config.robot_description_semantic,
             moveit_config.planning_pipelines,
             moveit_config.robot_description_kinematics,
+            {
+                "warehouse_plugin": warehouse_plugin,
+                "warehouse_host": warehouse_host,
+                "warehouse_port": warehouse_port,
+            },
             moveit_config.joint_limits,
         ],
         arguments=["--display-config", rviz_file],
@@ -221,6 +237,21 @@ def generate_launch_description():
                  "rviz", "view_robot.rviz"]
             ),
             description="Path to the RViz config file.",
+        ),
+        DeclareLaunchArgument(
+            "warehouse_plugin",
+            default_value="",
+            description="warehouse_ros plugin class (empty = no warehouse).",
+        ),
+        DeclareLaunchArgument(
+            "warehouse_host",
+            default_value="",
+            description="Warehouse database host or file path.",
+        ),
+        DeclareLaunchArgument(
+            "warehouse_port",
+            default_value="0",
+            description="Warehouse database port.",
         ),
     ]
 
