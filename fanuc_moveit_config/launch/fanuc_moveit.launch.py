@@ -138,15 +138,12 @@ def launch_setup(context, *args, **kwargs):
         output="log",
         parameters=[
             moveit_config.to_dict(),
-<<<<<<< HEAD
             move_group_capabilities,
-=======
             {
                 "warehouse_plugin": warehouse_plugin,
                 "warehouse_host": warehouse_host,
                 "warehouse_port": warehouse_port,
             },
->>>>>>> d3bb320f5537f75742226aaadd2855bfde305101
         ],
     )
     nodes_to_launch.append(move_group_node)
