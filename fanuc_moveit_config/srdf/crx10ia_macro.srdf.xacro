@@ -38,11 +38,14 @@
     <xacro:if value="${hand_type != 'none'}">
       <disable_collisions link1="${prefix}_J6_link" link2="${prefix}_hand_link" reason="Adjacent"/>
 
-      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_ring_L1" reason="Adjacent"/>
+      <!-- <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_ring_L1" reason="Adjacent"/>
       <disable_collisions link1="${prefix}_ring_L1" link2="${prefix}_ring_L2" reason="Adjacent"/>
       <disable_collisions link1="${prefix}_ring_L2" link2="${prefix}_ring_L3" reason="Adjacent"/>
       <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_index_L1" reason="Adjacent"/>
-      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_thumb_L1" reason="Adjacent"/>
+      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_thumb_L1" reason="Adjacent"/> -->
+
+      <disable_collisions link1="${prefix}_finger_left" link2="${prefix}_hand_link" reason="Adjacent"/>
+      <disable_collisions link1="${prefix}_finger_right" link2="${prefix}_hand_link" reason="Adjacent"/>
     </xacro:if>
 
   </xacro:macro>
