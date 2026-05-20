@@ -37,20 +37,8 @@
 
     <xacro:if value="${hand_type != 'none'}">
       <disable_collisions link1="${prefix}_J6_link" link2="${prefix}_hand_link" reason="Adjacent"/>
-<<<<<<< HEAD
-
-      <!-- <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_ring_L1" reason="Adjacent"/>
-      <disable_collisions link1="${prefix}_ring_L1" link2="${prefix}_ring_L2" reason="Adjacent"/>
-      <disable_collisions link1="${prefix}_ring_L2" link2="${prefix}_ring_L3" reason="Adjacent"/>
-      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_index_L1" reason="Adjacent"/>
-      <disable_collisions link1="${prefix}_hand_link" link2="${prefix}_thumb_L1" reason="Adjacent"/> -->
-
-      <disable_collisions link1="${prefix}_finger_left" link2="${prefix}_hand_link" reason="Adjacent"/>
-      <disable_collisions link1="${prefix}_finger_right" link2="${prefix}_hand_link" reason="Adjacent"/>
-=======
       <xacro:include filename="$(arg hand_srdf_file)"/>
       <xacro:hand_collisions_srdf prefix="${prefix}"/>
->>>>>>> d3bb320f5537f75742226aaadd2855bfde305101
     </xacro:if>
 
   </xacro:macro>
