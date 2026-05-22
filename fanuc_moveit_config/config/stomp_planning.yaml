@@ -24,3 +24,5 @@ stomp:
   control_cost_weight: 0.1
   delta_t: 0.1
   num_recovery_samples: 10           # retry with fresh random init on failure
+    # Make sure collision checking includes attached objects
+  collision_checker_plugin: stomp_moveit::CollisionChecker

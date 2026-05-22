@@ -15,7 +15,7 @@
 
   <xacro:include filename="$(find fanuc_crx_description)/urdf/crx10ia_urdf_macro.xacro"/>
 
-  <xacro:include filename="$(find futur_hand_description)/hands/hand_$(arg hand_type)/xacro/hand_$(arg hand_type).xacro"/>
+  <xacro:include filename="$(find futur_hand_description)/hands/hand_$(arg hand_type)/urdf/hand_$(arg hand_type).urdf.xacro"/>
 
   <xacro:if value="$(arg use_mock)">
     <xacro:include filename="$(find fanuc_hardware_interface)/config/crx_mock_ros2_control_macro.xacro"/>

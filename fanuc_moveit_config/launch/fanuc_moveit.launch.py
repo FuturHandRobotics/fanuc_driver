@@ -88,7 +88,7 @@ def launch_setup(context, *args, **kwargs):
 
     hand_srdf_file = os.path.join(
         get_package_share_directory("futur_hand_description"),
-        "hands", f"hand_{hand_type.perform(context)}", "srdf", "hand_collisions.srdf.xacro",
+        "hands", f"hand_{hand_type.perform(context)}", "srdf", f"hand_{hand_type.perform(context)}.srdf.xacro",
     )
 
     description_arguments = {
