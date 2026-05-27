@@ -123,7 +123,7 @@ def launch_setup(context, *args, **kwargs):
         .planning_scene_monitor(
             publish_robot_description=True, publish_robot_description_semantic=True
         )
-        .planning_pipelines(pipelines=["ompl", "stomp"])
+        .planning_pipelines(pipelines=["ompl", "stomp", "taskspace_birrt"])
         .to_moveit_configs()
     )
 
