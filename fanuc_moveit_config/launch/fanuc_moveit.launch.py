@@ -18,6 +18,7 @@ from launch.conditions import IfCondition, UnlessCondition
 from moveit_configs_utils import MoveItConfigsBuilder
 from ament_index_python.packages import get_package_share_directory
 import os
+import yaml
 
 
 def launch_setup(context, *args, **kwargs):
@@ -34,6 +35,20 @@ def launch_setup(context, *args, **kwargs):
     warehouse_host = LaunchConfiguration("warehouse_host").perform(context)
     warehouse_port = int(LaunchConfiguration(
         "warehouse_port").perform(context) or 0)
+
+    # Load hand joint limits from futur_hand_description and apply prefix.
+    # This keeps hand-specific limits out of the arm's MoveIt config package.
+    hand_joint_limits_file = LaunchConfiguration(
+        "hand_joint_limits_file").perform(context)
+    hand_joint_limits_params = {}
+    if hand_joint_limits_file and os.path.isfile(hand_joint_limits_file):
+        prefix_str = prefix.perform(context)
+        with open(hand_joint_limits_file) as f:
+            raw = yaml.safe_load(f) or {}
+        prefixed = {f"{prefix_str}_{k}": v for k, v in raw.items()}
+        hand_joint_limits_params = {
+            "robot_description_planning": {"joint_limits": prefixed}
+        }
 
     nodes_to_launch = []
 
@@ -144,6 +159,7 @@ def launch_setup(context, *args, **kwargs):
                 "warehouse_host": warehouse_host,
                 "warehouse_port": warehouse_port,
             },
+            hand_joint_limits_params,
         ],
     )
     nodes_to_launch.append(move_group_node)
@@ -165,6 +181,7 @@ def launch_setup(context, *args, **kwargs):
                 "warehouse_port": warehouse_port,
             },
             moveit_config.joint_limits,
+            hand_joint_limits_params,
         ],
         arguments=["--display-config", rviz_file],
         condition=IfCondition(start_rviz),
@@ -257,6 +274,15 @@ def generate_launch_description():
             "warehouse_port",
             default_value="0",
             description="Warehouse database port.",
+        ),
+        DeclareLaunchArgument(
+            "hand_joint_limits_file",
+            default_value="",
+            description=(
+                "Path to a YAML file with MoveIt joint limits for the hand. "
+                "Keys are bare joint names (without prefix); the prefix is "
+                "prepended at launch time."
+            ),
         ),
     ]
 

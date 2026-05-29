@@ -107,14 +107,6 @@ def launch_setup(context, *args, **kwargs):
     )
     nodes_to_launch.append(rviz_node)
 
-    slider_test_node = Node(
-        package="slider_publisher",
-        executable="slider_gui_node",
-        name="slider_gui_node",
-        output="both",
-    )
-    nodes_to_launch.append(slider_test_node)
-
     controller_spawner_processes = [
         ExecuteProcess(
             cmd=[

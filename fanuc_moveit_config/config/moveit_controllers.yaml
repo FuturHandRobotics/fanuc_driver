@@ -3,17 +3,50 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# MoveIt uses this configuration for controller management
 trajectory_execution:
   allowed_execution_duration_scaling: 1.0
   allowed_goal_duration_margin: 1000.0
   allowed_start_tolerance: 0.01
 
-moveit_controller_manager: moveit_ros_control_interface/Ros2ControlManager
-
-# Increase timeout for controller manager
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
 controller_manager_timeout: 10.0
 
-# Disable octomap to eliminate octomap errors
+# false = MoveIt does not try to load/unload controllers via ros2_control.
+# Required because hand_trajectory_controller is a standalone action server,
+# not a ros2_control controller.
+moveit_manage_controllers: false
+
+# Jazzy format: controller_names AND per-controller config are ALL nested
+# under moveit_simple_controller_manager so the plugin finds them via its
+# param_namespace prefix.
+moveit_simple_controller_manager:
+  controller_names:
+    - joint_trajectory_controller
+    - hand_trajectory_controller
+
+  # Arm: ros2_control joint_trajectory_controller
+  # Action: /joint_trajectory_controller/follow_joint_trajectory
+  joint_trajectory_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: true
+    joints:
+      - fanuc_J1
+      - fanuc_J2
+      - fanuc_J3
+      - fanuc_J4
+      - fanuc_J5
+      - fanuc_J6
+
+  # Hand: mock_hand_driver_node (or real hand_driver_node) action server
+  # Action: /hand_trajectory_controller/follow_joint_trajectory
+  hand_trajectory_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: true
+    joints:
+      - fanuc_finger_left_tendon
+      - fanuc_finger_right_tendon
+
 octomap:
   enabled: false
