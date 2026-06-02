@@ -40,15 +40,32 @@ def launch_setup(context, *args, **kwargs):
     # This keeps hand-specific limits out of the arm's MoveIt config package.
     hand_joint_limits_file = LaunchConfiguration(
         "hand_joint_limits_file").perform(context)
-    hand_joint_limits_params = {}
+    prefix_str = prefix.perform(context)
+    hand_moveit_params: dict = {}
+
+    # Joint limits
     if hand_joint_limits_file and os.path.isfile(hand_joint_limits_file):
-        prefix_str = prefix.perform(context)
         with open(hand_joint_limits_file) as f:
             raw = yaml.safe_load(f) or {}
         prefixed = {f"{prefix_str}_{k}": v for k, v in raw.items()}
-        hand_joint_limits_params = {
-            "robot_description_planning": {"joint_limits": prefixed}
+        hand_moveit_params["robot_description_planning"] = {"joint_limits": prefixed}
+
+    # Controller config — add hand controller to the arm's controller list
+    hand_controller_file = LaunchConfiguration("hand_controller_file").perform(context)
+    if hand_controller_file and os.path.isfile(hand_controller_file):
+        with open(hand_controller_file) as f:
+            raw_ctrl = yaml.safe_load(f) or {}
+        prefixed_ctrl: dict = {}
+        for ctrl_name, ctrl_cfg in raw_ctrl.items():
+            cfg = dict(ctrl_cfg)
+            if "joints" in cfg:
+                cfg["joints"] = [f"{prefix_str}_{j}" for j in cfg["joints"]]
+            prefixed_ctrl[ctrl_name] = cfg
+        hand_moveit_params["moveit_simple_controller_manager"] = {
+            "controller_names": ["joint_trajectory_controller"] + list(prefixed_ctrl.keys()),
+            **prefixed_ctrl,
         }
+    hand_joint_limits_params = hand_moveit_params
 
     nodes_to_launch = []
 
@@ -282,6 +299,15 @@ def generate_launch_description():
                 "Path to a YAML file with MoveIt joint limits for the hand. "
                 "Keys are bare joint names (without prefix); the prefix is "
                 "prepended at launch time."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "hand_controller_file",
+            default_value="",
+            description=(
+                "Path to a YAML file with MoveIt controller config for the hand. "
+                "Joint names are bare (without prefix); the prefix is prepended "
+                "at launch time."
             ),
         ),
     ]
