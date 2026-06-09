@@ -12,7 +12,7 @@ from launch.substitutions import (
 )
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
 from launch.conditions import IfCondition, UnlessCondition
 
 from moveit_configs_utils import MoveItConfigsBuilder
@@ -62,6 +62,9 @@ def launch_setup(context, *args, **kwargs):
                 cfg["joints"] = [f"{prefix_str}_{j}" for j in cfg["joints"]]
             prefixed_ctrl[ctrl_name] = cfg
         hand_moveit_params["moveit_simple_controller_manager"] = {
+            # Wait up to 20 s for controller action servers — the hand
+            # controller is spawned ~10 s after the arm starts.
+            "wait_for_servers": 20.0,
             "controller_names": ["joint_trajectory_controller"] + list(prefixed_ctrl.keys()),
             **prefixed_ctrl,
         }
@@ -123,11 +126,13 @@ def launch_setup(context, *args, **kwargs):
         "hands", f"hand_{hand_type.perform(context)}", "srdf", f"hand_{hand_type.perform(context)}.srdf.xacro",
     )
 
+    hand_type_str = hand_type.perform(context)
+
     description_arguments = {
         "robot_ip": robot_ip.perform(context),
         "use_mock": use_mock.perform(context),
         "gpio_configuration": gpio_configuration.perform(context),
-        "hand_type": hand_type.perform(context),
+        "hand_type": hand_type_str,
         "prefix": prefix.perform(context),
     }
 
@@ -179,7 +184,10 @@ def launch_setup(context, *args, **kwargs):
             hand_joint_limits_params,
         ],
     )
-    nodes_to_launch.append(move_group_node)
+    # Delay move_group until after the hand_trajectory_controller action server is
+    # up.  The hand spawner fires 3 s after the control launch; give it 3 more
+    # seconds of margin so the action client connects on the first attempt.
+    nodes_to_launch.append(TimerAction(period=6.0, actions=[move_group_node]))
 
     rviz_file = rviz_file_path
     rviz_node = Node(
@@ -203,7 +211,7 @@ def launch_setup(context, *args, **kwargs):
         arguments=["--display-config", rviz_file],
         condition=IfCondition(start_rviz),
     )
-    nodes_to_launch.append(rviz_node)
+    nodes_to_launch.append(TimerAction(period=10.0, actions=[rviz_node]))
 
     return nodes_to_launch
 

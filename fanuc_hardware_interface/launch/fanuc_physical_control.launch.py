@@ -4,10 +4,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from launch import LaunchDescription
+import os
+import yaml as _yaml
+
 from launch.actions import (
     DeclareLaunchArgument,
     OpaqueFunction,
     ExecuteProcess,
+    TimerAction,
 )
 from launch.conditions import IfCondition
 from launch.substitutions import (
@@ -39,6 +43,7 @@ def launch_setup(context, *args, **kwargs):
         urdf_xacro_file = robot_model_str + ".urdf.xacro"
     else:
         urdf_xacro_file = "6dof_robot.urdf.xacro"
+
 
     robot_description = Command(
         [
@@ -73,7 +78,33 @@ def launch_setup(context, *args, **kwargs):
         "robot_description": ParameterValue(value=robot_description, value_type=str)
     }
 
+    # ── Hand JTC — read motor list from futur_hand_driver yaml ────────────────
+    _hand_type_str = hand_type.perform(context)
+    _prefix_str    = prefix.perform(context)
+    try:
+        from ament_index_python.packages import get_package_share_directory as _gpsd
+        _hand_yaml = os.path.join(
+            _gpsd('futur_hand_driver'), 'config', 'hands', f'{_hand_type_str}.yaml')
+        _motors = (_yaml.safe_load(open(_hand_yaml)) or {}).get('hand', {}).get('motors', [])
+    except (FileNotFoundError, KeyError):
+        _motors = []
+
     ros_parameters = [robot_description, ros2_control_config]
+
+    if _motors:
+        _tendon_joints = [f"{_prefix_str}_{m['joint']}" for m in _motors]
+        ros_parameters.append({
+            'hand_trajectory_controller': {
+                'type': 'joint_trajectory_controller/JointTrajectoryController',
+            },
+            'joints':                        _tendon_joints,
+            'command_interfaces':            ['position'],
+            'state_interfaces':              ['position', 'velocity'],
+            'allow_partial_joints_goal':     False,
+            'interpolate_from_desired_state': True,
+            'constraints': {'goal_time': 0.0, 'stopped_velocity_tolerance': 0.0},
+        })
+
     nodes_to_launch = []
     control_node = Node(
         package="controller_manager",
@@ -82,6 +113,23 @@ def launch_setup(context, *args, **kwargs):
         output="both",
     )
     nodes_to_launch.append(control_node)
+
+    if _motors:
+        nodes_to_launch.append(
+            TimerAction(
+                period=3.0,
+                actions=[Node(
+                    package='controller_manager',
+                    executable='spawner',
+                    arguments=[
+                        'hand_trajectory_controller',
+                        '--controller-manager', '/controller_manager',
+                        '--controller-manager-timeout', '30',
+                    ],
+                    output='screen',
+                )],
+            )
+        )
 
     robot_state_pub_node = Node(
         package="robot_state_publisher",
