@@ -28,14 +28,22 @@
   <xacro:include filename="$(find futur_hand_description)/config/hand_ros2_control.xacro"/>
 
   <link name="world"/>
+  <link name="$(arg prefix)_end_effector_fanuc"/>
   <link name="$(arg prefix)_end_effector"/>
 
   <xacro:crx10ia
     parent="world"
-    child="$(arg prefix)_end_effector"
+    child="$(arg prefix)_end_effector_fanuc"
     prefix="$(arg prefix)_">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:crx10ia>
+
+  <!-- Reorient the end-effector frame relative to the Fanuc flange -->
+  <joint name="$(arg prefix)_end_effector_joint" type="fixed">
+    <parent link="$(arg prefix)_end_effector_fanuc"/>
+    <child  link="$(arg prefix)_end_effector"/>
+    <origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
+  </joint>
 
   <xacro:hand_description
     parent_link="$(arg prefix)_end_effector"
