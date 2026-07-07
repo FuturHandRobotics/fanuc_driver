@@ -5,6 +5,7 @@
 
 from launch import LaunchDescription
 import os
+import tempfile
 import yaml as _yaml
 
 from launch.actions import (
@@ -93,17 +94,35 @@ def launch_setup(context, *args, **kwargs):
 
     if _motors:
         _tendon_joints = [f"{_prefix_str}_{m['joint']}" for m in _motors]
-        ros_parameters.append({
-            'hand_trajectory_controller': {
-                'type': 'joint_trajectory_controller/JointTrajectoryController',
+        # launch_ros wraps a plain dict under /**→ros__parameters, which puts the
+        # controller's joints/interfaces at the wrong param path.  Write a proper
+        # two-section YAML (CM type-registration + controller params) to a temp
+        # file and pass it as a path so launch_ros leaves the structure untouched.
+        _hand_jtc_yaml = {
+            'controller_manager': {
+                'ros__parameters': {
+                    'hand_trajectory_controller': {
+                        'type': 'joint_trajectory_controller/JointTrajectoryController',
+                    },
+                },
             },
-            'joints':                        _tendon_joints,
-            'command_interfaces':            ['position'],
-            'state_interfaces':              ['position', 'velocity'],
-            'allow_partial_joints_goal':     False,
-            'interpolate_from_desired_state': True,
-            'constraints': {'goal_time': 0.0, 'stopped_velocity_tolerance': 0.0},
-        })
+            'hand_trajectory_controller': {
+                'ros__parameters': {
+                    'joints':                         _tendon_joints,
+                    'command_interfaces':             ['position'],
+                    'state_interfaces':               ['position', 'velocity'],
+                    'allow_partial_joints_goal':      False,
+                    'interpolate_from_desired_state': True,
+                    'constraints': {'goal_time': 0.0, 'stopped_velocity_tolerance': 0.0},
+                },
+            },
+        }
+        _hand_jtc_tmp = tempfile.NamedTemporaryFile(
+            mode='w', suffix='.yaml', delete=False,
+            prefix=f'hand_jtc_{_hand_type_str}_')
+        _yaml.dump(_hand_jtc_yaml, _hand_jtc_tmp)
+        _hand_jtc_tmp.close()
+        ros_parameters.append(_hand_jtc_tmp.name)
 
     nodes_to_launch = []
     control_node = Node(

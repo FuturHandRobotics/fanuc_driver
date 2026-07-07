@@ -90,16 +90,33 @@ def launch_setup(context, *args, **kwargs):
     if _motors:
         _tendon_joints = [f"{_prefix_str}_{m['joint']}" for m in _motors]
         ros_parameters.append({
-            'hand_trajectory_controller': {
-                'type': 'joint_trajectory_controller/JointTrajectoryController',
+            'controller_manager': {
+                'ros__parameters': {
+                    'hand_trajectory_controller': {
+                        'type': 'joint_trajectory_controller/JointTrajectoryController',
+                    },
+                },
             },
-            'joints':                        _tendon_joints,
-            'command_interfaces':            ['position'],
-            'state_interfaces':              ['position', 'velocity'],
-            'allow_partial_joints_goal':     False,
-            'interpolate_from_desired_state': True,
-            'constraints': {'goal_time': 0.0, 'stopped_velocity_tolerance': 0.0},
+            'hand_trajectory_controller': {
+                'ros__parameters': {
+                    'joints':                        _tendon_joints,
+                    'command_interfaces':            ['position'],
+                    'state_interfaces':              ['position', 'velocity'],
+                    'allow_partial_joints_goal':     False,
+                    'interpolate_from_desired_state': True,
+                    'constraints': {'goal_time': 0.0, 'stopped_velocity_tolerance': 0.0},
+                },
+            },
         })
+
+    # In mock mode the ScaledJointTrajectoryController checks ConnectionStatus/is_connected
+    # which the mock hardware initialises to 0.0, causing it to bail on every update cycle.
+    # Use the standard JTC instead so the arm can actually move during simulation.
+    ros_parameters.append({
+        'joint_trajectory_controller': {
+            'type': 'joint_trajectory_controller/JointTrajectoryController',
+        }
+    })
 
     nodes_to_launch = []
     control_node = Node(

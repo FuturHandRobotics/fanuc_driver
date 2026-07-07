@@ -62,9 +62,9 @@ def launch_setup(context, *args, **kwargs):
                 cfg["joints"] = [f"{prefix_str}_{j}" for j in cfg["joints"]]
             prefixed_ctrl[ctrl_name] = cfg
         hand_moveit_params["moveit_simple_controller_manager"] = {
-            # Wait up to 20 s for controller action servers — the hand
-            # controller is spawned ~10 s after the arm starts.
-            "wait_for_servers": 20.0,
+            # Real-hardware HandHardwareInterface runs Dynamixel calibration
+            # on activate, which can take 30+ s. 90 s gives enough margin.
+            "wait_for_servers": 45.0,
             "controller_names": ["joint_trajectory_controller"] + list(prefixed_ctrl.keys()),
             **prefixed_ctrl,
         }
