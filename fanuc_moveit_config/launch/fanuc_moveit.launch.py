@@ -29,6 +29,7 @@ def launch_setup(context, *args, **kwargs):
     use_mock = LaunchConfiguration("use_mock")
     hand_type = LaunchConfiguration("hand_type")
     prefix = LaunchConfiguration("prefix")
+    hand_ros2_control = LaunchConfiguration("hand_ros2_control")
     start_rviz = LaunchConfiguration("start_rviz")
     rviz_file_path = LaunchConfiguration("rviz_file_path")
     warehouse_plugin = LaunchConfiguration("warehouse_plugin").perform(context)
@@ -93,6 +94,7 @@ def launch_setup(context, *args, **kwargs):
             "use_mock": use_mock,
             "hand_type": hand_type,
             "prefix": prefix,
+            "hand_ros2_control": hand_ros2_control,
         }.items(),
         condition=UnlessCondition(use_mock),
     )
@@ -116,6 +118,7 @@ def launch_setup(context, *args, **kwargs):
             "launch_rviz": "false",
             "hand_type": hand_type,
             "prefix": prefix,
+            "hand_ros2_control": hand_ros2_control,
         }.items(),
         condition=IfCondition(use_mock),
     )
@@ -271,6 +274,18 @@ def generate_launch_description():
             "prefix",
             default_value="fanuc",
             description="Prefix for robot/hand frames and joints.",
+        ),
+        DeclareLaunchArgument(
+            "hand_ros2_control",
+            default_value="true",
+            description=(
+                "Include the hand ros2_control hardware block in the arm URDF "
+                "and spawn its trajectory controller on the arm's controller "
+                "manager. Set false when a dedicated hand controller manager "
+                "is launched separately (e.g. futur_hand_driver's "
+                "hand_control.launch.py) — the hand's geometry/SRDF groups "
+                "stay attached for collision/planning either way."
+            ),
         ),
         DeclareLaunchArgument(
             "start_rviz",

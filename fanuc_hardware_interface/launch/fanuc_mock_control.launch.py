@@ -5,6 +5,7 @@
 
 from launch import LaunchDescription
 import os
+import tempfile
 import yaml as _yaml
 
 from launch.actions import (
@@ -33,9 +34,11 @@ def launch_setup(context, *args, **kwargs):
     launch_rviz = LaunchConfiguration("launch_rviz")
     hand_type = LaunchConfiguration("hand_type")
     prefix = LaunchConfiguration("prefix")
+    hand_ros2_control = LaunchConfiguration("hand_ros2_control")
 
     robot_model_str = robot_model.perform(context)
     robot_series_str = robot_series.perform(context)
+    hand_ros2_control_str = hand_ros2_control.perform(context)
 
     if robot_series_str == "crx":
         urdf_xacro_file = robot_model_str + ".urdf.xacro"
@@ -68,6 +71,9 @@ def launch_setup(context, *args, **kwargs):
             "prefix:=",
             prefix,
             " ",
+            "hand_ros2_control:=",
+            hand_ros2_control,
+            " ",
         ]
     )
     robot_description = {
@@ -85,11 +91,22 @@ def launch_setup(context, *args, **kwargs):
     except (FileNotFoundError, KeyError):
         _motors = []
 
+    # Only claim the hand's hardware interfaces/controller when this CM owns
+    # the hand (hand_ros2_control=true). When a dedicated hand controller
+    # manager is launched separately, the URDF built above excludes the
+    # hand's <ros2_control> block entirely, so this CM must not reference
+    # hand joints it no longer has interfaces for.
+    _drive_hand = bool(_motors) and hand_ros2_control_str == "true"
+
     ros_parameters = [robot_description, ros2_control_config]
 
-    if _motors:
+    if _drive_hand:
         _tendon_joints = [f"{_prefix_str}_{m['joint']}" for m in _motors]
-        ros_parameters.append({
+        # launch_ros wraps a plain dict under /**→ros__parameters, which puts the
+        # controller's joints/interfaces at the wrong param path.  Write a proper
+        # two-section YAML (CM type-registration + controller params) to a temp
+        # file and pass it as a path so launch_ros leaves the structure untouched.
+        _hand_jtc_yaml = {
             'controller_manager': {
                 'ros__parameters': {
                     'hand_trajectory_controller': {
@@ -99,15 +116,21 @@ def launch_setup(context, *args, **kwargs):
             },
             'hand_trajectory_controller': {
                 'ros__parameters': {
-                    'joints':                        _tendon_joints,
-                    'command_interfaces':            ['position'],
-                    'state_interfaces':              ['position', 'velocity'],
-                    'allow_partial_joints_goal':     False,
+                    'joints':                         _tendon_joints,
+                    'command_interfaces':             ['position'],
+                    'state_interfaces':               ['position', 'velocity'],
+                    'allow_partial_joints_goal':      False,
                     'interpolate_from_desired_state': True,
                     'constraints': {'goal_time': 0.0, 'stopped_velocity_tolerance': 0.0},
                 },
             },
-        })
+        }
+        _hand_jtc_tmp = tempfile.NamedTemporaryFile(
+            mode='w', suffix='.yaml', delete=False,
+            prefix=f'hand_jtc_{_hand_type_str}_')
+        _yaml.dump(_hand_jtc_yaml, _hand_jtc_tmp)
+        _hand_jtc_tmp.close()
+        ros_parameters.append(_hand_jtc_tmp.name)
 
     # In mock mode the ScaledJointTrajectoryController checks ConnectionStatus/is_connected
     # which the mock hardware initialises to 0.0, causing it to bail on every update cycle.
@@ -127,7 +150,7 @@ def launch_setup(context, *args, **kwargs):
     )
     nodes_to_launch.append(control_node)
 
-    if _motors:
+    if _drive_hand:
         nodes_to_launch.append(
             TimerAction(
                 period=3.0,
@@ -239,6 +262,16 @@ def generate_launch_description():
             "launch_rviz",
             default_value="true",
             description="Specify whether or not to open RVIZ.",
+        ),
+        DeclareLaunchArgument(
+            "hand_ros2_control",
+            default_value="true",
+            description=(
+                "Include the hand ros2_control hardware block in the arm URDF "
+                "and spawn its trajectory controller on this CM. Set false "
+                "when a dedicated hand controller manager is launched "
+                "separately (e.g. futur_hand_driver's hand_control.launch.py)."
+            ),
         ),
     ]
 

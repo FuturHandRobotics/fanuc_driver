@@ -13,6 +13,9 @@
 
   <xacro:arg name="prefix" default="fanuc"/>
   <xacro:arg name="hand_type" default="minimal"/>
+  <!-- Set false when a dedicated hand controller manager is launched separately
+       so that the arm CM does not also try to claim the hand hardware. -->
+  <xacro:arg name="hand_ros2_control" default="true"/>
 
   <xacro:include filename="$(find fanuc_crx_description)/urdf/crx10ia_urdf_macro.xacro"/>
 
@@ -26,7 +29,9 @@
     <xacro:include filename="$(find fanuc_hardware_interface)/config/crx_physical_ros2_control_macro.xacro"/>
   </xacro:unless>
 
-  <xacro:include filename="$(find futur_hand_description)/config/hand_ros2_control.xacro"/>
+  <xacro:if value="$(arg hand_ros2_control)">
+    <xacro:include filename="$(find futur_hand_description)/config/hand_ros2_control.xacro"/>
+  </xacro:if>
 
   <link name="world"/>
   <link name="$(arg prefix)_end_effector"/>
