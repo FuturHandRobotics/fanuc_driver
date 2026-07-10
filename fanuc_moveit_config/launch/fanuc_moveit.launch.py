@@ -30,6 +30,7 @@ def launch_setup(context, *args, **kwargs):
     hand_type = LaunchConfiguration("hand_type")
     prefix = LaunchConfiguration("prefix")
     hand_ros2_control = LaunchConfiguration("hand_ros2_control")
+    no_calib = LaunchConfiguration("no_calib")
     start_rviz = LaunchConfiguration("start_rviz")
     rviz_file_path = LaunchConfiguration("rviz_file_path")
     warehouse_plugin = LaunchConfiguration("warehouse_plugin").perform(context)
@@ -95,6 +96,7 @@ def launch_setup(context, *args, **kwargs):
             "hand_type": hand_type,
             "prefix": prefix,
             "hand_ros2_control": hand_ros2_control,
+            "no_calib": no_calib,
         }.items(),
         condition=UnlessCondition(use_mock),
     )
@@ -119,6 +121,7 @@ def launch_setup(context, *args, **kwargs):
             "hand_type": hand_type,
             "prefix": prefix,
             "hand_ros2_control": hand_ros2_control,
+            "no_calib": no_calib,
         }.items(),
         condition=IfCondition(use_mock),
     )
@@ -285,6 +288,16 @@ def generate_launch_description():
                 "is launched separately (e.g. futur_hand_driver's "
                 "hand_control.launch.py) — the hand's geometry/SRDF groups "
                 "stay attached for collision/planning either way."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "no_calib",
+            default_value="false",
+            description=(
+                "Skip the hand's current-sensing calibration routine on real "
+                "hardware and use whatever position the motors are currently "
+                "at as the 'open' reference instead. No effect in mock mode "
+                "or when hand_ros2_control:=false."
             ),
         ),
         DeclareLaunchArgument(

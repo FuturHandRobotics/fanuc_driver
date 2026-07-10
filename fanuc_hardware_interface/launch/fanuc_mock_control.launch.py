@@ -35,6 +35,7 @@ def launch_setup(context, *args, **kwargs):
     hand_type = LaunchConfiguration("hand_type")
     prefix = LaunchConfiguration("prefix")
     hand_ros2_control = LaunchConfiguration("hand_ros2_control")
+    no_calib = LaunchConfiguration("no_calib")
 
     robot_model_str = robot_model.perform(context)
     robot_series_str = robot_series.perform(context)
@@ -73,6 +74,9 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "hand_ros2_control:=",
             hand_ros2_control,
+            " ",
+            "no_calib:=",
+            no_calib,
             " ",
         ]
     )
@@ -271,6 +275,16 @@ def generate_launch_description():
                 "and spawn its trajectory controller on this CM. Set false "
                 "when a dedicated hand controller manager is launched "
                 "separately (e.g. futur_hand_driver's hand_control.launch.py)."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "no_calib",
+            default_value="false",
+            description=(
+                "Skip the hand's current-sensing calibration routine. Has no "
+                "effect in mock mode (mock hardware never calibrates) — "
+                "declared here only so the same launch_arguments dict works "
+                "for both fanuc_physical_control.launch.py and this file."
             ),
         ),
     ]

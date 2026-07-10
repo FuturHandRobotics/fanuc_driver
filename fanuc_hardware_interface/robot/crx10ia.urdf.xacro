@@ -16,6 +16,9 @@
   <!-- Set false when a dedicated hand controller manager is launched separately
        so that the arm CM does not also try to claim the hand hardware. -->
   <xacro:arg name="hand_ros2_control" default="true"/>
+  <!-- Skip the hand's current-sensing calibration on real hardware and use
+       the motors' current position as the 'open' reference instead. -->
+  <xacro:arg name="no_calib" default="false"/>
 
   <xacro:include filename="$(find fanuc_crx_description)/urdf/crx10ia_urdf_macro.xacro"/>
 
