@@ -4,6 +4,10 @@ install
 log
 .cache
 
+# Python bytecode cache
+__pycache__/
+*.py[cod]
+
 # Editor specific files
 *.swp
 .idea/
