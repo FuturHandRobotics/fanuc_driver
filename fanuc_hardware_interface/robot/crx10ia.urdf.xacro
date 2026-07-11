@@ -9,7 +9,7 @@
   <xacro:arg name="out_cmd_interp_buff_target" default="8"/>
   <xacro:arg name="force_sensor_type" default="1"/>
   <xacro:arg name="use_mock" default="false"/>
-  
+
 
   <xacro:arg name="prefix" default="fanuc"/>
   <xacro:arg name="hand_type" default="minimal"/>

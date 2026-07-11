@@ -35,13 +35,13 @@ def launch_setup(context, *args, **kwargs):
     rviz_file_path = LaunchConfiguration("rviz_file_path")
     warehouse_plugin = LaunchConfiguration("warehouse_plugin").perform(context)
     warehouse_host = LaunchConfiguration("warehouse_host").perform(context)
-    warehouse_port = int(LaunchConfiguration(
-        "warehouse_port").perform(context) or 0)
+    warehouse_port = int(LaunchConfiguration("warehouse_port").perform(context) or 0)
 
     # Load hand joint limits from futur_hand_description and apply prefix.
     # This keeps hand-specific limits out of the arm's MoveIt config package.
-    hand_joint_limits_file = LaunchConfiguration(
-        "hand_joint_limits_file").perform(context)
+    hand_joint_limits_file = LaunchConfiguration("hand_joint_limits_file").perform(
+        context
+    )
     prefix_str = prefix.perform(context)
     hand_moveit_params: dict = {}
 
@@ -67,7 +67,8 @@ def launch_setup(context, *args, **kwargs):
             # Real-hardware HandHardwareInterface runs Dynamixel calibration
             # on activate, which can take 30+ s. 90 s gives enough margin.
             "wait_for_servers": 45.0,
-            "controller_names": ["joint_trajectory_controller"] + list(prefixed_ctrl.keys()),
+            "controller_names": ["joint_trajectory_controller"]
+            + list(prefixed_ctrl.keys()),
             **prefixed_ctrl,
         }
     hand_joint_limits_params = hand_moveit_params
@@ -129,7 +130,10 @@ def launch_setup(context, *args, **kwargs):
 
     hand_srdf_file = os.path.join(
         get_package_share_directory("futur_hand_description"),
-        "hands", f"hand_{hand_type.perform(context)}", "srdf", f"hand_{hand_type.perform(context)}.srdf.xacro",
+        "hands",
+        f"hand_{hand_type.perform(context)}",
+        "srdf",
+        f"hand_{hand_type.perform(context)}.srdf.xacro",
     )
 
     hand_type_str = hand_type.perform(context)
@@ -308,8 +312,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "rviz_file_path",
             default_value=PathJoinSubstitution(
-                [FindPackageShare("fanuc_moveit_config"),
-                 "rviz", "view_robot.rviz"]
+                [FindPackageShare("fanuc_moveit_config"), "rviz", "view_robot.rviz"]
             ),
             description="Path to the RViz config file.",
         ),

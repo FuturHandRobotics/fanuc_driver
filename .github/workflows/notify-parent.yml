@@ -2,7 +2,7 @@ name: Notify parent to bump submodule
 
 on:
   push:
-    branches: [ main ] # <- Edit here to tracked branch
+    branches: [main] # <- Edit here to tracked branch
   workflow_dispatch: {}
 
 jobs:
@@ -80,7 +80,7 @@ jobs:
               ;;
             5*)
               echo "::warning title=GitHub server error::HTTP $code. Transient issue—consider retry/backoff."
-              
+
               # Optional quick retry (1x):
               sleep 2
               gh api "repos/${GH_PARENT_REPO}/dispatches" \

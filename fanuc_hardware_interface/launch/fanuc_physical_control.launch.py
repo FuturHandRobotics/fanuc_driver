@@ -48,14 +48,12 @@ def launch_setup(context, *args, **kwargs):
     else:
         urdf_xacro_file = "6dof_robot.urdf.xacro"
 
-
     robot_description = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution(
-                [FindPackageShare("fanuc_hardware_interface"),
-                 "robot", urdf_xacro_file]
+                [FindPackageShare("fanuc_hardware_interface"), "robot", urdf_xacro_file]
             ),
             " ",
             "robot_series:=",
@@ -90,12 +88,16 @@ def launch_setup(context, *args, **kwargs):
 
     # ── Hand JTC — read motor list from futur_hand_driver yaml ────────────────
     _hand_type_str = hand_type.perform(context)
-    _prefix_str    = prefix.perform(context)
+    _prefix_str = prefix.perform(context)
     try:
         from ament_index_python.packages import get_package_share_directory as _gpsd
+
         _hand_yaml = os.path.join(
-            _gpsd('futur_hand_driver'), 'config', 'hands', f'{_hand_type_str}.yaml')
-        _motors = (_yaml.safe_load(open(_hand_yaml)) or {}).get('hand', {}).get('motors', [])
+            _gpsd("futur_hand_driver"), "config", "hands", f"{_hand_type_str}.yaml"
+        )
+        _motors = (
+            (_yaml.safe_load(open(_hand_yaml)) or {}).get("hand", {}).get("motors", [])
+        )
     except (FileNotFoundError, KeyError):
         _motors = []
 
@@ -115,27 +117,30 @@ def launch_setup(context, *args, **kwargs):
         # two-section YAML (CM type-registration + controller params) to a temp
         # file and pass it as a path so launch_ros leaves the structure untouched.
         _hand_jtc_yaml = {
-            'controller_manager': {
-                'ros__parameters': {
-                    'hand_trajectory_controller': {
-                        'type': 'joint_trajectory_controller/JointTrajectoryController',
+            "controller_manager": {
+                "ros__parameters": {
+                    "hand_trajectory_controller": {
+                        "type": "joint_trajectory_controller/JointTrajectoryController",
                     },
                 },
             },
-            'hand_trajectory_controller': {
-                'ros__parameters': {
-                    'joints':                         _tendon_joints,
-                    'command_interfaces':             ['position'],
-                    'state_interfaces':               ['position', 'velocity'],
-                    'allow_partial_joints_goal':      False,
-                    'interpolate_from_desired_state': True,
-                    'constraints': {'goal_time': 0.0, 'stopped_velocity_tolerance': 0.0},
+            "hand_trajectory_controller": {
+                "ros__parameters": {
+                    "joints": _tendon_joints,
+                    "command_interfaces": ["position"],
+                    "state_interfaces": ["position", "velocity"],
+                    "allow_partial_joints_goal": False,
+                    "interpolate_from_desired_state": True,
+                    "constraints": {
+                        "goal_time": 0.0,
+                        "stopped_velocity_tolerance": 0.0,
+                    },
                 },
             },
         }
         _hand_jtc_tmp = tempfile.NamedTemporaryFile(
-            mode='w', suffix='.yaml', delete=False,
-            prefix=f'hand_jtc_{_hand_type_str}_')
+            mode="w", suffix=".yaml", delete=False, prefix=f"hand_jtc_{_hand_type_str}_"
+        )
         _yaml.dump(_hand_jtc_yaml, _hand_jtc_tmp)
         _hand_jtc_tmp.close()
         ros_parameters.append(_hand_jtc_tmp.name)
@@ -153,16 +158,20 @@ def launch_setup(context, *args, **kwargs):
         nodes_to_launch.append(
             TimerAction(
                 period=3.0,
-                actions=[Node(
-                    package='controller_manager',
-                    executable='spawner',
-                    arguments=[
-                        'hand_trajectory_controller',
-                        '--controller-manager', '/controller_manager',
-                        '--controller-manager-timeout', '30',
-                    ],
-                    output='screen',
-                )],
+                actions=[
+                    Node(
+                        package="controller_manager",
+                        executable="spawner",
+                        arguments=[
+                            "hand_trajectory_controller",
+                            "--controller-manager",
+                            "/controller_manager",
+                            "--controller-manager-timeout",
+                            "30",
+                        ],
+                        output="screen",
+                    )
+                ],
             )
         )
 
@@ -177,8 +186,7 @@ def launch_setup(context, *args, **kwargs):
     rviz_file = PathJoinSubstitution(
         [
             FindPackageShare(
-                PythonExpression(
-                    ['"fanuc_" + "', robot_series, '" + "_description"'])
+                PythonExpression(['"fanuc_" + "', robot_series, '" + "_description"'])
             ),
             "rviz",
             PythonExpression(['"view_" + "', robot_series, '" + ".rviz"']),
