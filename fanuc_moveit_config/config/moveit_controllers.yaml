@@ -3,17 +3,36 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# MoveIt uses this configuration for controller management
 trajectory_execution:
   allowed_execution_duration_scaling: 1.0
   allowed_goal_duration_margin: 1000.0
   allowed_start_tolerance: 0.01
 
-moveit_controller_manager: moveit_ros_control_interface/Ros2ControlManager
-
-# Increase timeout for controller manager
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
 controller_manager_timeout: 10.0
 
-# Disable octomap to eliminate octomap errors
+# false = MoveIt does not try to load/unload controllers via ros2_control.
+moveit_manage_controllers: false
+
+# Hand controller (hand_trajectory_controller) is injected at launch time
+# from futur_hand_description/hands/<hand_type>/config/moveit_controllers.yaml
+# with prefix applied. Only arm controllers are defined here.
+moveit_simple_controller_manager:
+  controller_names:
+    - joint_trajectory_controller
+
+  # Arm: ros2_control joint_trajectory_controller
+  joint_trajectory_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: true
+    joints:
+      - fanuc_J1
+      - fanuc_J2
+      - fanuc_J3
+      - fanuc_J4
+      - fanuc_J5
+      - fanuc_J6
+
 octomap:
   enabled: false

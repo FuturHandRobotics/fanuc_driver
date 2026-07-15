@@ -1,0 +1,24 @@
+planning_plugins:
+  - futur_arm_planners/TaskSpaceBiRRTManager
+
+request_adapters:
+  - default_planning_request_adapters/ResolveConstraintFrames
+  - default_planning_request_adapters/ValidateWorkspaceBounds
+  - default_planning_request_adapters/CheckStartStateBounds
+  - default_planning_request_adapters/CheckStartStateCollision
+
+# Time parameterization is handled inside the planner (TOTG), so it is
+# intentionally omitted from the response adapters here.
+response_adapters:
+  - default_planning_response_adapters/ValidateSolution
+  - default_planning_response_adapters/DisplayMotionPath
+
+# ee_link: ""            # leave unset to auto-derive from the group's tip link
+planning_timeout: 10.0
+step_size: 0.05          # max task-space step per tree extension (metres + rad·weight)
+connection_threshold: 0.05  # distance at which two nodes are considered connected
+rot_weight: 0.1          # weight applied to angular distance in the metric
+ik_timeout: 0.05         # per-call IK timeout in seconds
+position_bound: 0.85     # workspace cube half-extent in metres (x, y, z)
+refine_path: true        # re-solve IK sequentially to fix branch discontinuities (smoothness)
+shortcut_time: 1.0       # budget in seconds for multi-pass greedy shortcutting (0 = disabled)

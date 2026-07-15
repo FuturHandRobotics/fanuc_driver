@@ -10,19 +10,50 @@
   <xacro:arg name="force_sensor_type" default="1"/>
   <xacro:arg name="use_mock" default="false"/>
 
+
+  <xacro:arg name="prefix" default="fanuc"/>
+  <xacro:arg name="hand_type" default="minimal"/>
+  <!-- Set false when a dedicated hand controller manager is launched separately
+       so that the arm CM does not also try to claim the hand hardware. -->
+  <xacro:arg name="hand_ros2_control" default="true"/>
+  <!-- Skip the hand's current-sensing calibration on real hardware and use
+       the motors' current position as the 'open' reference instead. -->
+  <xacro:arg name="no_calib" default="false"/>
+
   <xacro:include filename="$(find fanuc_crx_description)/urdf/crx10ia_urdf_macro.xacro"/>
+
+  <xacro:include filename="$(find futur_hand_description)/hands/hand_$(arg hand_type)/urdf/hand_$(arg hand_type).urdf.xacro"/>
+
   <xacro:if value="$(arg use_mock)">
     <xacro:include filename="$(find fanuc_hardware_interface)/config/crx_mock_ros2_control_macro.xacro"/>
   </xacro:if>
+
   <xacro:unless value="$(arg use_mock)">
     <xacro:include filename="$(find fanuc_hardware_interface)/config/crx_physical_ros2_control_macro.xacro"/>
   </xacro:unless>
 
+  <xacro:if value="$(arg hand_ros2_control)">
+    <xacro:include filename="$(find futur_hand_description)/config/hand_ros2_control.xacro"/>
+  </xacro:if>
+
   <link name="world"/>
-  <link name="end_effector"/>
-  <xacro:crx10ia parent="world" child="end_effector">
+  <link name="$(arg prefix)_end_effector"/>
+
+  <xacro:crx10ia
+    parent="world"
+    child="$(arg prefix)_end_effector"
+    prefix="$(arg prefix)_">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:crx10ia>
 
-  <xacro:crx_control name="crx10ia"/>
+  <xacro:hand_description
+    parent_link="$(arg prefix)_end_effector"
+    prefix="$(arg prefix)"
+  />
+
+  <xacro:crx_control
+    name="crx10ia"
+    prefix="$(arg prefix)_"/>
+
+
 </robot>
