@@ -36,7 +36,7 @@ joint_trajectory_controller:
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
     # allow_nonzero_velocity_at_trajectory_end: false # Set to false to suppress deprecation warning
-    allow_nonzero_velocity_at_trajectory_end: false # Set to true for moveit_servo
+    allow_nonzero_velocity_at_trajectory_end: true # Set to true for moveit_servo
     constraints:
       stopped_velocity_tolerance: 0.0
       goal_time: 0.0
