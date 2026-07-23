@@ -178,6 +178,8 @@ def launch_setup(context, *args, **kwargs):
         "capabilities": "move_group/ExecuteTaskSolutionCapability"
     }
 
+    planning_scene_publish_rate = {"publish_planning_scene_hz": 30.0}
+
     # Start the actual move_group node/action server
     move_group_node = Node(
         package="moveit_ros_move_group",
@@ -186,6 +188,7 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             moveit_config.to_dict(),
             move_group_capabilities,
+            planning_scene_publish_rate,
             {
                 "warehouse_plugin": warehouse_plugin,
                 "warehouse_host": warehouse_host,
