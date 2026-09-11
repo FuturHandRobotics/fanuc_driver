@@ -19,6 +19,9 @@
   <!-- Skip the hand's current-sensing calibration on real hardware and use
        the motors' current position as the 'open' reference instead. -->
   <xacro:arg name="no_calib" default="false"/>
+  <!-- auto | skip | manual — supersedes no_calib when set to anything other
+       than "auto". -->
+  <xacro:arg name="calib_mode" default="auto"/>
 
   <xacro:include filename="$(find fanuc_crx_description)/urdf/crx10ia_urdf_macro.xacro"/>
 

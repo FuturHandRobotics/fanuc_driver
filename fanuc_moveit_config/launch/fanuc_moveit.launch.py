@@ -31,6 +31,7 @@ def launch_setup(context, *args, **kwargs):
     prefix = LaunchConfiguration("prefix")
     hand_ros2_control = LaunchConfiguration("hand_ros2_control")
     no_calib = LaunchConfiguration("no_calib")
+    calib_mode = LaunchConfiguration("calib_mode")
     start_rviz = LaunchConfiguration("start_rviz")
     rviz_file_path = LaunchConfiguration("rviz_file_path")
     warehouse_plugin = LaunchConfiguration("warehouse_plugin").perform(context)
@@ -98,6 +99,7 @@ def launch_setup(context, *args, **kwargs):
             "prefix": prefix,
             "hand_ros2_control": hand_ros2_control,
             "no_calib": no_calib,
+            "calib_mode": calib_mode,
         }.items(),
         condition=UnlessCondition(use_mock),
     )
@@ -302,6 +304,16 @@ def generate_launch_description():
                 "hardware and use whatever position the motors are currently "
                 "at as the 'open' reference instead. No effect in mock mode "
                 "or when hand_ros2_control:=false."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "calib_mode",
+            default_value="auto",
+            description=(
+                "Hand calibration mode: auto (current-sensing hard-stop), skip "
+                "(use current position as open reference), or manual (load "
+                "init_pos/max_pos from the manual_calibrate cache file). "
+                "Supersedes no_calib when set to anything other than 'auto'."
             ),
         ),
         DeclareLaunchArgument(

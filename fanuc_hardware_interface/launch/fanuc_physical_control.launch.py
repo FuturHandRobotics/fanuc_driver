@@ -38,6 +38,7 @@ def launch_setup(context, *args, **kwargs):
     prefix = LaunchConfiguration("prefix")
     hand_ros2_control = LaunchConfiguration("hand_ros2_control")
     no_calib = LaunchConfiguration("no_calib")
+    calib_mode = LaunchConfiguration("calib_mode")
 
     robot_model_str = robot_model.perform(context)
     robot_series_str = robot_series.perform(context)
@@ -79,6 +80,9 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "no_calib:=",
             no_calib,
+            " ",
+            "calib_mode:=",
+            calib_mode,
             " ",
         ]
     )
@@ -304,6 +308,16 @@ def generate_launch_description():
                 "hardware and use whatever position the motors are currently "
                 "at as the 'open' reference instead. Ignored when "
                 "hand_ros2_control:=false (nothing to calibrate here)."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "calib_mode",
+            default_value="auto",
+            description=(
+                "Hand calibration mode: auto (current-sensing hard-stop), skip "
+                "(use current position as open reference), or manual (load "
+                "init_pos/max_pos from the manual_calibrate cache file). "
+                "Supersedes no_calib when set to anything other than 'auto'."
             ),
         ),
     ]
